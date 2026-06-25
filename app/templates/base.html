@@ -20,8 +20,9 @@
       padding: 0 1.5rem;
       display: flex;
       align-items: center;
-      gap: 2rem;
-      height: 52px;
+      gap: 1.25rem;
+      min-height: 52px;
+      flex-wrap: wrap;
     }
 
     nav a.brand {
@@ -30,6 +31,7 @@
       color: #fafaf9;
       text-decoration: none;
       letter-spacing: 0.02em;
+      margin-right: .75rem;
     }
 
     nav a {
@@ -40,24 +42,14 @@
 
     nav a:hover { color: #fafaf9; }
 
-    .low-stock-badge {
-      background: #dc2626;
-      color: white;
-      border-radius: 9999px;
-      font-size: 0.7rem;
-      padding: 1px 6px;
-      margin-left: 4px;
-      font-weight: 600;
-    }
-
     main {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 2rem auto;
       padding: 0 1.5rem;
     }
 
     h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.25rem; }
-    h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+    h2 { font-size: 1.1rem; font-weight: 600; margin: 1.25rem 0 0.75rem; }
 
     .flash {
       background: #d1fae5;
@@ -78,6 +70,7 @@
       text-decoration: none;
       cursor: pointer;
       border: none;
+      font-family: inherit;
     }
 
     .btn-primary { background: #1c1917; color: #fafaf9; }
@@ -116,6 +109,8 @@
 
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #fafaf9; }
+    td a { color: inherit; font-weight: 500; text-decoration: none; }
+    td a:hover { text-decoration: underline; }
 
     .badge {
       display: inline-block;
@@ -129,13 +124,18 @@
     .badge-low { background: #fef3c7; color: #92400e; }
     .badge-out { background: #fee2e2; color: #dc2626; }
 
-    .card {
+    .card, .stat-card {
       background: white;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
       padding: 1.25rem 1.5rem;
       margin-bottom: 1rem;
     }
+
+    .stat-card { text-decoration: none; color: inherit; display: block; }
+    .stat-card:hover { transform: translateY(-1px); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-number { font-size: 2rem; font-weight: 800; line-height: 1; margin-bottom: .25rem; }
 
     .form-group { margin-bottom: 1rem; }
     label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: #44403c; }
@@ -160,9 +160,7 @@
     textarea { resize: vertical; min-height: 80px; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-
     .meta { font-size: 0.8rem; color: #78716c; }
-
     .positive { color: #16a34a; font-weight: 600; }
     .negative { color: #dc2626; font-weight: 600; }
 
@@ -178,15 +176,27 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 1rem;
       margin-bottom: 1.25rem;
     }
 
     .page-header h1 { margin-bottom: 0; }
 
-    @media (max-width: 600px) {
-      .grid-2 { grid-template-columns: 1fr; }
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 220px auto;
+      gap: .75rem;
+      align-items: end;
+      margin-bottom: 1rem;
+    }
+
+    .inline-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+    @media (max-width: 700px) {
+      .grid-2, .stats-grid, .filters { grid-template-columns: 1fr; }
       table { font-size: 0.82rem; }
       td, th { padding: 0.5rem 0.6rem; }
+      nav { padding: .75rem 1rem; }
     }
   </style>
 </head>
@@ -194,6 +204,7 @@
 
 <nav>
   <a href="{{ url_for('main.index') }}" class="brand">GraceSupply</a>
+  <a href="{{ url_for('main.index') }}">Dashboard</a>
   <a href="{{ url_for('main.items') }}">All Items</a>
   <a href="{{ url_for('main.new_item') }}">+ Add Item</a>
   <a href="{{ url_for('main.low_stock') }}">Low Stock</a>

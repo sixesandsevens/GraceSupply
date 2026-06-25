@@ -7,7 +7,10 @@
     <h1>{{ item.name }}</h1>
     <span class="meta">{{ item.category }} &middot; {{ item.unit }}</span>
   </div>
-  <a href="{{ url_for('main.items') }}" class="btn btn-secondary">Back</a>
+  <div class="inline-actions">
+    <a href="{{ url_for('main.edit_item', item_id=item.id) }}" class="btn btn-secondary">Edit</a>
+    <a href="{{ url_for('main.items') }}" class="btn btn-secondary">Back</a>
+  </div>
 </div>
 
 <!-- Current status -->
@@ -35,6 +38,14 @@
   {% if item.notes %}
     <div class="meta" style="font-style:italic;">{{ item.notes }}</div>
   {% endif %}
+</div>
+
+
+<div class="card">
+  <form method="POST" action="{{ url_for('main.archive_item', item_id=item.id) }}" onsubmit="return confirm('Archive this item? It will disappear from active inventory.');">
+    <button type="submit" class="btn btn-danger">Archive Item</button>
+    <span class="meta" style="margin-left:.5rem;">Use this for discontinued supplies or mistakes. History stays in the database.</span>
+  </form>
 </div>
 
 <!-- Adjust quantity -->

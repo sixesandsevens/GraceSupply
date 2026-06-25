@@ -7,8 +7,27 @@
   <a href="{{ url_for('main.new_item') }}" class="btn btn-primary">+ Add Item</a>
 </div>
 
+<form method="GET" class="card filters">
+  <div class="form-group" style="margin:0;">
+    <label for="q">Search</label>
+    <input type="text" id="q" name="q" value="{{ query }}" placeholder="Name, location, notes…">
+  </div>
+  <div class="form-group" style="margin:0;">
+    <label for="category">Category</label>
+    <select id="category" name="category">
+      <option value="">All categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="inline-actions">
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{{ url_for('main.items') }}" class="btn btn-secondary">Reset</a>
+  </div>
+</form>
+
 {% if items %}
-  {% set current_category = namespace(value=None) %}
   <table>
     <thead>
       <tr>
@@ -23,7 +42,7 @@
     <tbody>
       {% for item in items %}
         <tr>
-          <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}" style="text-decoration:none;color:inherit;font-weight:500;">{{ item.name }}</a></td>
+          <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a></td>
           <td class="meta">{{ item.category }}</td>
           <td class="meta">{{ item.location or '—' }}</td>
           <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
@@ -43,7 +62,7 @@
   </table>
 {% else %}
   <div class="empty-state">
-    <p>No items yet. Add your first supply to get started.</p>
+    <p>No matching items. Either you're stocked like royalty or the search goblin got picky.</p>
     <a href="{{ url_for('main.new_item') }}" class="btn btn-primary">+ Add Item</a>
   </div>
 {% endif %}

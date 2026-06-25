@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Dashboard</h1>
+  <a href="{{ url_for('main.new_item') }}" class="btn btn-primary">+ Add Item</a>
+</div>
+
+<div class="stats-grid">
+  <a class="stat-card" href="{{ url_for('main.items') }}">
+    <div class="stat-number">{{ total_items }}</div>
+    <div class="meta">active items</div>
+  </a>
+  <a class="stat-card" href="{{ url_for('main.low_stock') }}">
+    <div class="stat-number">{{ low_count }}</div>
+    <div class="meta">low stock</div>
+  </a>
+  <a class="stat-card" href="{{ url_for('main.low_stock') }}">
+    <div class="stat-number">{{ out_count }}</div>
+    <div class="meta">out of stock</div>
+  </a>
+</div>
+
+<h2>Recent Activity</h2>
+{% if recent_transactions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Item</th>
+        <th>Change</th>
+        <th>Type</th>
+        <th>Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for txn in recent_transactions %}
+        <tr>
+          <td class="meta">{{ txn.created_at.strftime('%b %d, %I:%M %p') }}</td>
+          <td><a href="{{ url_for('main.item_detail', item_id=txn.item.id) }}">{{ txn.item.name }}</a></td>
+          <td>
+            {% if txn.change_amount > 0 %}
+              <span class="positive">+{{ txn.change_amount }}</span>
+            {% elif txn.change_amount < 0 %}
+              <span class="negative">{{ txn.change_amount }}</span>
+            {% else %}
+              <span class="meta">—</span>
+            {% endif %}
+          </td>
+          <td class="meta">{{ txn.transaction_type }}</td>
+          <td>{{ txn.note or '—' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">
+    <p>No activity yet. Add supplies and GraceSupply will start keeping score.</p>
+  </div>
+{% endif %}
+{% endblock %}
