@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Low Stock — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Low Stock</h1>
+  <a href="{{ url_for('main.items') }}" class="btn btn-secondary">All Items</a>
+</div>
+
+{% if items %}
+  <p class="meta" style="margin-bottom:1rem;">{{ items|length }} item{{ 's' if items|length != 1 }} at or below minimum.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Category</th>
+        <th>Location</th>
+        <th>Have</th>
+        <th>Need</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}" style="text-decoration:none;color:inherit;font-weight:500;">{{ item.name }}</a></td>
+          <td class="meta">{{ item.category }}</td>
+          <td class="meta">{{ item.location or '—' }}</td>
+          <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
+          <td class="meta">{{ item.minimum_quantity }}</td>
+          <td>
+            {% if item.current_quantity <= 0 %}
+              <span class="badge badge-out">Out</span>
+            {% else %}
+              <span class="badge badge-low">Low</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">
+    <p>All items are above minimum. You're good.</p>
+  </div>
+{% endif %}
+{% endblock %}

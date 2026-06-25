@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}All Items — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>All Items</h1>
+  <a href="{{ url_for('main.new_item') }}" class="btn btn-primary">+ Add Item</a>
+</div>
+
+{% if items %}
+  {% set current_category = namespace(value=None) %}
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th>Category</th>
+        <th>Location</th>
+        <th>Qty</th>
+        <th>Min</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}" style="text-decoration:none;color:inherit;font-weight:500;">{{ item.name }}</a></td>
+          <td class="meta">{{ item.category }}</td>
+          <td class="meta">{{ item.location or '—' }}</td>
+          <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
+          <td class="meta">{{ item.minimum_quantity }}</td>
+          <td>
+            {% if item.current_quantity <= 0 %}
+              <span class="badge badge-out">Out</span>
+            {% elif item.current_quantity <= item.minimum_quantity %}
+              <span class="badge badge-low">Low</span>
+            {% else %}
+              <span class="badge badge-ok">OK</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">
+    <p>No items yet. Add your first supply to get started.</p>
+    <a href="{{ url_for('main.new_item') }}" class="btn btn-primary">+ Add Item</a>
+  </div>
+{% endif %}
+{% endblock %}

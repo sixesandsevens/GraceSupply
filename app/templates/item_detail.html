@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ item.name }} — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ item.name }}</h1>
+    <span class="meta">{{ item.category }} &middot; {{ item.unit }}</span>
+  </div>
+  <a href="{{ url_for('main.items') }}" class="btn btn-secondary">Back</a>
+</div>
+
+<!-- Current status -->
+<div class="card" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
+  <div style="text-align:center;">
+    <div style="font-size:2.5rem;font-weight:700;line-height:1;">{{ item.current_quantity }}</div>
+    <div class="meta">in stock</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:1.5rem;font-weight:600;color:#78716c;line-height:1;">{{ item.minimum_quantity }}</div>
+    <div class="meta">minimum</div>
+  </div>
+  <div>
+    {% if item.current_quantity <= 0 %}
+      <span class="badge badge-out" style="font-size:0.9rem;padding:4px 12px;">Out of stock</span>
+    {% elif item.current_quantity <= item.minimum_quantity %}
+      <span class="badge badge-low" style="font-size:0.9rem;padding:4px 12px;">Low — needs reorder</span>
+    {% else %}
+      <span class="badge badge-ok" style="font-size:0.9rem;padding:4px 12px;">OK</span>
+    {% endif %}
+  </div>
+  {% if item.location %}
+    <div class="meta">📍 {{ item.location }}</div>
+  {% endif %}
+  {% if item.notes %}
+    <div class="meta" style="font-style:italic;">{{ item.notes }}</div>
+  {% endif %}
+</div>
+
+<!-- Adjust quantity -->
+<div class="card">
+  <h2>Adjust Quantity</h2>
+  <form method="POST" action="{{ url_for('main.adjust_item', item_id=item.id) }}" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <div class="form-group" style="margin:0;min-width:120px;">
+      <label for="change_amount">Change (+/-)</label>
+      <input type="number" id="change_amount" name="change_amount" placeholder="+4 or -2" required>
+    </div>
+    <div class="form-group" style="margin:0;flex:1;min-width:180px;">
+      <label for="note">Note</label>
+      <input type="text" id="note" name="note" placeholder="Used for 3rd floor rooms…">
+    </div>
+    <div class="form-group" style="margin:0;min-width:140px;">
+      <label for="created_by">Your name</label>
+      <input type="text" id="created_by" name="created_by" placeholder="Optional">
+    </div>
+    <button type="submit" class="btn btn-primary" style="align-self:flex-end;">Save</button>
+  </form>
+</div>
+
+<!-- Transaction history -->
+<h2>History</h2>
+{% if transactions %}
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Change</th>
+        <th>Type</th>
+        <th>Note</th>
+        <th>By</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for txn in transactions %}
+        <tr>
+          <td class="meta">{{ txn.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
+          <td>
+            {% if txn.change_amount > 0 %}
+              <span class="positive">+{{ txn.change_amount }}</span>
+            {% else %}
+              <span class="negative">{{ txn.change_amount }}</span>
+            {% endif %}
+          </td>
+          <td class="meta">{{ txn.transaction_type }}</td>
+          <td>{{ txn.note or '—' }}</td>
+          <td class="meta">{{ txn.created_by or '—' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-state">No transactions yet.</div>
+{% endif %}
+{% endblock %}

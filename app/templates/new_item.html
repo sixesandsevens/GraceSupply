@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Add Item — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Add Item</h1>
+  <a href="{{ url_for('main.items') }}" class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="card">
+  <form method="POST">
+    <div class="form-group">
+      <label for="name">Item Name *</label>
+      <input type="text" id="name" name="name" required placeholder="e.g. Trash bags 33 gal">
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="unit">Unit</label>
+        <input type="text" id="unit" name="unit" value="each" placeholder="each, box, case, roll…">
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label for="current_quantity">Current Quantity</label>
+        <input type="number" id="current_quantity" name="current_quantity" value="0" min="0">
+      </div>
+
+      <div class="form-group">
+        <label for="minimum_quantity">Minimum Quantity (reorder point)</label>
+        <input type="number" id="minimum_quantity" name="minimum_quantity" value="0" min="0">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="location">Storage Location</label>
+      <input type="text" id="location" name="location" placeholder="e.g. Storage room B, shelf 2">
+    </div>
+
+    <div class="form-group">
+      <label for="notes">Notes</label>
+      <textarea id="notes" name="notes" placeholder="Brand preferences, vendor notes, anything useful…"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Item</button>
+  </form>
+</div>
+{% endblock %}

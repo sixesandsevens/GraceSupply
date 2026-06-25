@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GraceSupply{% endblock %}</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f5f4;
+      color: #1c1917;
+      min-height: 100vh;
+    }
+
+    nav {
+      background: #1c1917;
+      color: #fafaf9;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 52px;
+    }
+
+    nav a.brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fafaf9;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    nav a {
+      color: #a8a29e;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    nav a:hover { color: #fafaf9; }
+
+    .low-stock-badge {
+      background: #dc2626;
+      color: white;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      margin-left: 4px;
+      font-weight: 600;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.25rem; }
+    h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+    .flash {
+      background: #d1fae5;
+      border: 1px solid #6ee7b7;
+      color: #065f46;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.45rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary { background: #1c1917; color: #fafaf9; }
+    .btn-primary:hover { background: #292524; }
+    .btn-secondary { background: #e7e5e4; color: #1c1917; }
+    .btn-secondary:hover { background: #d6d3d1; }
+    .btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .btn-danger:hover { background: #fee2e2; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 0.6rem 1rem;
+      background: #f5f5f4;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #78716c;
+      border-bottom: 1px solid #e7e5e4;
+    }
+
+    td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid #f5f5f4;
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafaf9; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .badge-ok { background: #d1fae5; color: #065f46; }
+    .badge-low { background: #fef3c7; color: #92400e; }
+    .badge-out { background: #fee2e2; color: #dc2626; }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: #44403c; }
+
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d6d3d1;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      background: white;
+      color: #1c1917;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid #1c1917;
+      outline-offset: 1px;
+      border-color: transparent;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .meta { font-size: 0.8rem; color: #78716c; }
+
+    .positive { color: #16a34a; font-weight: 600; }
+    .negative { color: #dc2626; font-weight: 600; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #78716c;
+    }
+
+    .empty-state p { margin-bottom: 1rem; }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .page-header h1 { margin-bottom: 0; }
+
+    @media (max-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      table { font-size: 0.82rem; }
+      td, th { padding: 0.5rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('main.index') }}" class="brand">GraceSupply</a>
+  <a href="{{ url_for('main.items') }}">All Items</a>
+  <a href="{{ url_for('main.new_item') }}">+ Add Item</a>
+  <a href="{{ url_for('main.low_stock') }}">Low Stock</a>
+</nav>
+
+<main>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>
