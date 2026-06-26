@@ -1,9 +1,46 @@
+import os
 from collections import defaultdict
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
+from werkzeug.utils import secure_filename
 from app import db
 from app.models import Item, InventoryTransaction, InventoryCount
+
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_item_photo(file, item_id, old_filename=None):
+    """Save uploaded photo. Returns new filename, or None if no valid file."""
+    if not file or file.filename == "":
+        return None
+    if not allowed_file(file.filename):
+        flash("Photo must be a jpg, jpeg, png, or webp file.")
+        return None
+
+    ext = secure_filename(file.filename).rsplit(".", 1)[1].lower()
+    new_filename = f"item-{item_id}.{ext}"
+    upload_dir = current_app.config["UPLOAD_FOLDER"]
+
+    if old_filename and old_filename != new_filename:
+        old_path = os.path.join(upload_dir, old_filename)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    file.save(os.path.join(upload_dir, new_filename))
+    return new_filename
+
+
+def delete_item_photo(filename):
+    if not filename:
+        return
+    path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+    if os.path.exists(path):
+        os.remove(path)
 
 bp = Blueprint("main", __name__)
 
@@ -175,6 +212,11 @@ def new_item():
         db.session.add(item)
         db.session.commit()
 
+        photo = request.files.get("photo")
+        if photo and photo.filename:
+            item.image_filename = save_item_photo(photo, item.id)
+            db.session.commit()
+
         if item.current_quantity:
             ic = InventoryCount(
                 item_id=item.id,
@@ -236,6 +278,16 @@ def edit_item(item_id):
         item.location = request.form.get("location", "").strip()
         item.notes = request.form.get("notes", "").strip()
 
+        photo = request.files.get("photo")
+        if photo and photo.filename:
+            new_filename = save_item_photo(photo, item.id, item.image_filename)
+            if new_filename:
+                item.image_filename = new_filename
+
+        if request.form.get("remove_photo") and item.image_filename:
+            delete_item_photo(item.image_filename)
+            item.image_filename = None
+
         db.session.commit()
         flash("Item updated.")
         return redirect(url_for("main.item_detail", item_id=item.id))
@@ -272,6 +324,8 @@ def adjust_item(item_id):
 def archive_item(item_id):
     item = Item.query.get_or_404(item_id)
     item.active = False
+    delete_item_photo(item.image_filename)
+    item.image_filename = None
     create_transaction(item, 0, "archived", "Item archived")
     db.session.commit()
     flash("Item archived.")

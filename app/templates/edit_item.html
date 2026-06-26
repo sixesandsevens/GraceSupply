@@ -8,7 +8,7 @@
 </div>
 
 <div class="card">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <div class="form-group">
       <label for="name">Item Name *</label>
       <input type="text" id="name" name="name" required value="{{ item.name }}">
@@ -49,6 +49,23 @@
     <div class="form-group">
       <label for="notes">Notes</label>
       <textarea id="notes" name="notes">{{ item.notes or '' }}</textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Product Photo</label>
+      {% if item.image_filename %}
+        <div style="margin-bottom:.75rem;">
+          <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
+               alt="{{ item.name }}"
+               style="max-height:160px;border-radius:6px;border:1px solid #e7e5e4;">
+        </div>
+        <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#44403c;cursor:pointer;margin-bottom:.5rem;">
+          <input type="checkbox" name="remove_photo" value="1"> Remove current photo
+        </label>
+        <div class="meta" style="margin-bottom:.4rem;">Or upload a replacement:</div>
+      {% endif %}
+      <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png,.webp" style="padding:.4rem 0;">
+      <div class="meta" style="margin-top:.25rem;">jpg, jpeg, png, or webp · max 5 MB</div>
     </div>
 
     <button type="submit" class="btn btn-primary">Save Changes</button>

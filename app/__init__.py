@@ -15,5 +15,7 @@ def create_app():
 
     with app.app_context():
         db.create_all()
+        import os
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
     return app

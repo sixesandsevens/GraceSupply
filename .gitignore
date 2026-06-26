@@ -5,3 +5,5 @@ instance/*.db
 instance/*.sqlite
 .env
 .DS_Store
+app/static/uploads/items/*
+!app/static/uploads/items/.gitkeep

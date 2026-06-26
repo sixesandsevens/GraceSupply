@@ -31,6 +31,7 @@
   <table>
     <thead>
       <tr>
+        <th style="width:52px;"></th>
         <th>Item</th>
         <th>Category</th>
         <th>Location</th>
@@ -42,6 +43,14 @@
     <tbody>
       {% for item in items %}
         <tr>
+          <td style="padding:.4rem .6rem;">
+            {% if item.image_filename %}
+              <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
+                   alt="" style="width:44px;height:44px;object-fit:cover;border-radius:4px;display:block;">
+            {% else %}
+              <div style="width:44px;height:44px;border-radius:4px;background:#f5f5f4;"></div>
+            {% endif %}
+          </td>
           <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a></td>
           <td class="meta">{{ item.category }}</td>
           <td class="meta">{{ item.location or '—' }}</td>

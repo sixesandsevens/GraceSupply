@@ -33,7 +33,8 @@
         <table>
           <thead>
             <tr>
-              <th style="width:40%;">Item</th>
+              <th style="width:36px;"></th>
+              <th>Item</th>
               <th>Location</th>
               <th>Last count</th>
               <th style="width:110px;">Counted qty</th>
@@ -42,6 +43,12 @@
           <tbody>
       {% endif %}
       <tr>
+        <td style="padding:.3rem .5rem;">
+          {% if item.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
+                 alt="" style="width:30px;height:30px;object-fit:cover;border-radius:3px;display:block;">
+          {% endif %}
+        </td>
         <td style="font-weight:500;">{{ item.name }} <span class="meta">/ {{ item.unit }}</span></td>
         <td class="meta">{{ item.location or '—' }}</td>
         <td class="meta">

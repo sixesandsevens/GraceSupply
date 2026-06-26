@@ -15,6 +15,7 @@ class Item(db.Model):
 
     location = db.Column(db.String(120), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    image_filename = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
     transactions = db.relationship("InventoryTransaction", backref="item", lazy=True)

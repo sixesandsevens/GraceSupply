@@ -8,7 +8,7 @@
 </div>
 
 <div class="card">
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
     <div class="form-group">
       <label for="name">Item Name *</label>
       <input type="text" id="name" name="name" required placeholder="e.g. Trash bags 33 gal">
@@ -55,6 +55,12 @@
     <div class="form-group">
       <label for="notes">Notes</label>
       <textarea id="notes" name="notes" placeholder="Brand preferences, vendor notes, anything useful…"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="photo">Product Photo (optional)</label>
+      <input type="file" id="photo" name="photo" accept=".jpg,.jpeg,.png,.webp" style="padding:.4rem 0;">
+      <div class="meta" style="margin-top:.25rem;">jpg, jpeg, png, or webp · max 5 MB</div>
     </div>
 
     <button type="submit" class="btn btn-primary">Save Item</button>

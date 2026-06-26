@@ -13,6 +13,14 @@
   </div>
 </div>
 
+{% if item.image_filename %}
+<div class="card" style="padding:.75rem;">
+  <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
+       alt="{{ item.name }}"
+       style="max-height:280px;max-width:100%;border-radius:6px;display:block;">
+</div>
+{% endif %}
+
 <!-- Current status -->
 <div class="card" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
   <div style="text-align:center;">
