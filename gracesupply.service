@@ -3,8 +3,9 @@ Description=GraceSupply Alpha
 After=network.target
 
 [Service]
-User=REPLACE_WITH_YOUR_USER
+User=christi
 WorkingDirectory=/opt/gracesupply
+EnvironmentFile=/opt/gracesupply/.env
 Environment="PATH=/opt/gracesupply/.venv/bin"
 ExecStart=/opt/gracesupply/.venv/bin/gunicorn -w 2 -b 0.0.0.0:5050 run:app
 Restart=always
