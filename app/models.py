@@ -11,12 +11,15 @@ class Item(db.Model):
 
     current_quantity = db.Column(db.Integer, nullable=False, default=0)
     minimum_quantity = db.Column(db.Integer, nullable=False, default=0)
+    target_quantity = db.Column(db.Integer, nullable=True)
 
     location = db.Column(db.String(120), nullable=True)
     notes = db.Column(db.Text, nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
     transactions = db.relationship("InventoryTransaction", backref="item", lazy=True)
+    counts = db.relationship("InventoryCount", backref="item", lazy=True,
+                             order_by="InventoryCount.counted_at.desc()")
 
 
 class InventoryTransaction(db.Model):
@@ -29,3 +32,13 @@ class InventoryTransaction(db.Model):
     note = db.Column(db.Text, nullable=True)
     created_by = db.Column(db.String(80), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class InventoryCount(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    item_id = db.Column(db.Integer, db.ForeignKey("item.id"), nullable=False)
+    counted_quantity = db.Column(db.Integer, nullable=False)
+    counted_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    counted_by = db.Column(db.String(80), nullable=True)
+    note = db.Column(db.Text, nullable=True)

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Weekly Count — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Weekly Count</h1>
+  <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <p class="meta" style="margin-bottom:.75rem;">Walk the supply room and enter what you actually see. Leave a box blank to skip that item — it won't update.</p>
+  <form method="POST" id="count-form">
+    <div class="grid-2" style="margin-bottom:1rem;">
+      <div class="form-group" style="margin:0;">
+        <label for="counted_by">Your name</label>
+        <input type="text" id="counted_by" name="counted_by" placeholder="Chris">
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label for="note">Note (optional)</label>
+        <input type="text" id="note" name="note" placeholder="After move-in weekend, etc.">
+      </div>
+    </div>
+
+    {% set ns = namespace(current_cat=None) %}
+    {% for item in items %}
+      {% if item.category != ns.current_cat %}
+        {% if ns.current_cat is not none %}
+          </tbody></table>
+          <div style="height:1rem;"></div>
+        {% endif %}
+        {% set ns.current_cat = item.category %}
+        <h2>{{ item.category }}</h2>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40%;">Item</th>
+              <th>Location</th>
+              <th>Last count</th>
+              <th style="width:110px;">Counted qty</th>
+            </tr>
+          </thead>
+          <tbody>
+      {% endif %}
+      <tr>
+        <td style="font-weight:500;">{{ item.name }} <span class="meta">/ {{ item.unit }}</span></td>
+        <td class="meta">{{ item.location or '—' }}</td>
+        <td class="meta">
+          {% if item.counts %}
+            {{ item.counts[0].counted_quantity }}
+            <span style="color:#a8a29e;">{{ item.counts[0].counted_at.strftime('%b %d') }}</span>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          <input
+            type="number"
+            name="qty_{{ item.id }}"
+            min="0"
+            placeholder="—"
+            style="width:90px;text-align:center;"
+          >
+        </td>
+      </tr>
+    {% endfor %}
+    {% if items %}
+      </tbody></table>
+    {% endif %}
+
+    <div style="margin-top:1.5rem;">
+      <button type="submit" class="btn btn-primary" style="padding:.6rem 1.5rem;font-size:1rem;">
+        Save Count
+      </button>
+      <span class="meta" style="margin-left:1rem;">Only filled-in rows will be updated.</span>
+    </div>
+  </form>
+</div>
+{% endblock %}

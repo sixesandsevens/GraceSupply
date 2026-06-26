@@ -23,6 +23,12 @@
     <div style="font-size:1.5rem;font-weight:600;color:#78716c;line-height:1;">{{ item.minimum_quantity }}</div>
     <div class="meta">minimum</div>
   </div>
+  {% if item.target_quantity %}
+  <div style="text-align:center;">
+    <div style="font-size:1.5rem;font-weight:600;color:#78716c;line-height:1;">{{ item.target_quantity }}</div>
+    <div class="meta">target</div>
+  </div>
+  {% endif %}
   <div>
     {% if item.current_quantity <= 0 %}
       <span class="badge badge-out" style="font-size:0.9rem;padding:4px 12px;">Out of stock</span>
@@ -32,33 +38,60 @@
       <span class="badge badge-ok" style="font-size:0.9rem;padding:4px 12px;">OK</span>
     {% endif %}
   </div>
-  {% if item.location %}
-    <div class="meta">📍 {{ item.location }}</div>
-  {% endif %}
-  {% if item.notes %}
-    <div class="meta" style="font-style:italic;">{{ item.notes }}</div>
-  {% endif %}
+  {% if item.location %}<div class="meta">📍 {{ item.location }}</div>{% endif %}
+  {% if item.notes %}<div class="meta" style="font-style:italic;">{{ item.notes }}</div>{% endif %}
 </div>
 
+<!-- Usage stats -->
+{% if stats %}
+<div class="card" style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+  <div>
+    <div style="font-size:1.4rem;font-weight:700;">{{ stats.avg_weekly_usage }}</div>
+    <div class="meta">avg used / week</div>
+  </div>
+  {% if stats.weeks_remaining is not none %}
+  <div>
+    <div style="font-size:1.4rem;font-weight:700;color:{% if stats.weeks_remaining < 1 %}#dc2626{% elif stats.weeks_remaining < 2 %}#92400e{% else %}#1c1917{% endif %};">
+      {{ stats.weeks_remaining }}w
+    </div>
+    <div class="meta">estimated remaining</div>
+  </div>
+  {% endif %}
+  {% if stats.suggest_order %}
+  <div>
+    <div style="font-size:1.4rem;font-weight:700;color:#2563eb;">{{ stats.suggest_order }}</div>
+    <div class="meta">{{ item.unit }} to restock to target</div>
+  </div>
+  {% endif %}
+  {% if stats.spike %}
+  <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:.5rem .75rem;">
+    <span style="color:#92400e;font-size:.85rem;font-weight:600;">Usage spike detected</span>
+    <div class="meta">Last week was over 2x the usual rate.</div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
 
+<!-- Archive -->
 <div class="card">
   <form method="POST" action="{{ url_for('main.archive_item', item_id=item.id) }}" onsubmit="return confirm('Archive this item? It will disappear from active inventory.');">
     <button type="submit" class="btn btn-danger">Archive Item</button>
-    <span class="meta" style="margin-left:.5rem;">Use this for discontinued supplies or mistakes. History stays in the database.</span>
+    <span class="meta" style="margin-left:.5rem;">Discontinued supplies or mistakes. History stays in the database.</span>
   </form>
 </div>
 
-<!-- Adjust quantity -->
+<!-- Manual adjustment -->
 <div class="card">
-  <h2>Adjust Quantity</h2>
+  <h2>Manual Adjustment</h2>
+  <p class="meta" style="margin-bottom:.75rem;">For corrections and one-off changes — not weekly counts. Use the <a href="{{ url_for('main.count') }}">Weekly Count</a> page for regular counts.</p>
   <form method="POST" action="{{ url_for('main.adjust_item', item_id=item.id) }}" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
     <div class="form-group" style="margin:0;min-width:120px;">
       <label for="change_amount">Change (+/-)</label>
       <input type="number" id="change_amount" name="change_amount" placeholder="+4 or -2" required>
     </div>
     <div class="form-group" style="margin:0;flex:1;min-width:180px;">
-      <label for="note">Note</label>
-      <input type="text" id="note" name="note" placeholder="Used for 3rd floor rooms…">
+      <label for="note">Reason</label>
+      <input type="text" id="note" name="note" placeholder="Correction, received order…">
     </div>
     <div class="form-group" style="margin:0;min-width:140px;">
       <label for="created_by">Your name</label>
@@ -68,38 +101,59 @@
   </form>
 </div>
 
-<!-- Transaction history -->
-<h2>History</h2>
-{% if transactions %}
-  <table>
+<!-- Count history -->
+<h2>Count History</h2>
+{% if recent_counts %}
+  <table style="margin-bottom:1rem;">
     <thead>
       <tr>
         <th>Date</th>
-        <th>Change</th>
-        <th>Type</th>
-        <th>Note</th>
+        <th>Counted</th>
         <th>By</th>
+        <th>Note</th>
       </tr>
     </thead>
     <tbody>
-      {% for txn in transactions %}
-        <tr>
-          <td class="meta">{{ txn.created_at.strftime('%b %d, %Y %I:%M %p') }}</td>
-          <td>
-            {% if txn.change_amount > 0 %}
-              <span class="positive">+{{ txn.change_amount }}</span>
-            {% else %}
-              <span class="negative">{{ txn.change_amount }}</span>
-            {% endif %}
-          </td>
-          <td class="meta">{{ txn.transaction_type }}</td>
-          <td>{{ txn.note or '—' }}</td>
-          <td class="meta">{{ txn.created_by or '—' }}</td>
-        </tr>
+      {% for c in recent_counts %}
+      <tr>
+        <td class="meta">{{ c.counted_at.strftime('%b %d, %Y') }}</td>
+        <td>{{ c.counted_quantity }} <span class="meta">{{ item.unit }}</span></td>
+        <td class="meta">{{ c.counted_by or '—' }}</td>
+        <td class="meta">{{ c.note or '—' }}</td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 {% else %}
-  <div class="empty-state">No transactions yet.</div>
+  <div class="empty-state" style="padding:1.5rem;">No count records yet. This item will appear on the weekly count page.</div>
+{% endif %}
+
+<!-- Manual adjustment log -->
+{% if transactions %}
+<h2>Manual Adjustments</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Change</th>
+      <th>Reason</th>
+      <th>By</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for txn in transactions %}
+    <tr>
+      <td class="meta">{{ txn.created_at.strftime('%b %d, %Y') }}</td>
+      <td>
+        {% if txn.change_amount > 0 %}<span class="positive">+{{ txn.change_amount }}</span>
+        {% elif txn.change_amount < 0 %}<span class="negative">{{ txn.change_amount }}</span>
+        {% else %}<span class="meta">—</span>{% endif %}
+      </td>
+      <td>{{ txn.note or '—' }} <span class="meta">({{ txn.transaction_type }})</span></td>
+      <td class="meta">{{ txn.created_by or '—' }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endif %}
 {% endblock %}

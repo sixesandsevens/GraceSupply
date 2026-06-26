@@ -1,6 +1,9 @@
+from collections import defaultdict
+from datetime import datetime
+
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app import db
-from app.models import Item, InventoryTransaction
+from app.models import Item, InventoryTransaction, InventoryCount
 
 bp = Blueprint("main", __name__)
 
@@ -18,7 +21,6 @@ CATEGORIES = [
 
 
 def parse_int(value, default=0):
-    """Safely parse an integer from form input."""
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -37,28 +39,84 @@ def create_transaction(item, change_amount, transaction_type, note="", created_b
     return txn
 
 
-@bp.route("/")
-def index():
-    active_items = Item.query.filter_by(active=True)
-    total_items = active_items.count()
-    low_count = active_items.filter(Item.current_quantity <= Item.minimum_quantity).count()
-    out_count = Item.query.filter_by(active=True).filter(Item.current_quantity <= 0).count()
-    recent_transactions = (
-        InventoryTransaction.query
-        .join(Item)
-        .filter(Item.active == True)
-        .order_by(InventoryTransaction.created_at.desc())
-        .limit(8)
+def compute_usage_stats(item):
+    """
+    Returns avg weekly usage and estimated weeks remaining based on count history.
+    Needs at least 2 counts. Returns None if insufficient data.
+    """
+    counts = (
+        InventoryCount.query
+        .filter_by(item_id=item.id)
+        .order_by(InventoryCount.counted_at.desc())
+        .limit(6)
         .all()
     )
+
+    if len(counts) < 2:
+        return None
+
+    deltas = []
+    for i in range(len(counts) - 1):
+        newer = counts[i]
+        older = counts[i + 1]
+        days = (newer.counted_at - older.counted_at).days
+        if days <= 0:
+            continue
+        usage = older.counted_quantity - newer.counted_quantity
+        deltas.append((usage / days) * 7)
+
+    if not deltas:
+        return None
+
+    avg_weekly = sum(deltas) / len(deltas)
+    weeks_remaining = (item.current_quantity / avg_weekly) if avg_weekly > 0 else None
+    suggest_order = None
+    if item.target_quantity and avg_weekly > 0:
+        suggest_order = max(0, item.target_quantity - item.current_quantity)
+
+    return {
+        "avg_weekly_usage": round(avg_weekly, 1),
+        "weeks_remaining": round(weeks_remaining, 1) if weeks_remaining is not None else None,
+        "suggest_order": suggest_order,
+        "spike": avg_weekly > 0 and len(deltas) > 1 and deltas[0] > avg_weekly * 2,
+    }
+
+
+# ── Dashboard ────────────────────────────────────────────────────────────────
+
+@bp.route("/")
+def index():
+    active_q = Item.query.filter_by(active=True)
+    total_items = active_q.count()
+
+    low_items = (
+        Item.query
+        .filter(Item.active == True)
+        .filter(Item.minimum_quantity > 0)
+        .filter(Item.current_quantity <= Item.minimum_quantity)
+        .order_by(Item.category, Item.name)
+        .all()
+    )
+    low_count = len(low_items)
+    out_count = sum(1 for i in low_items if i.current_quantity <= 0)
+
+    last_count = (
+        InventoryCount.query
+        .order_by(InventoryCount.counted_at.desc())
+        .first()
+    )
+
     return render_template(
         "dashboard.html",
         total_items=total_items,
         low_count=low_count,
         out_count=out_count,
-        recent_transactions=recent_transactions,
+        low_items=low_items,
+        last_count=last_count,
     )
 
+
+# ── Items ────────────────────────────────────────────────────────────────────
 
 @bp.route("/items")
 def items():
@@ -100,6 +158,8 @@ def new_item():
 
         current_quantity = max(parse_int(request.form.get("current_quantity"), 0), 0)
         minimum_quantity = max(parse_int(request.form.get("minimum_quantity"), 0), 0)
+        target_raw = request.form.get("target_quantity", "").strip()
+        target_quantity = max(parse_int(target_raw), 0) if target_raw else None
 
         item = Item(
             name=name,
@@ -107,6 +167,7 @@ def new_item():
             unit=request.form.get("unit", "each").strip() or "each",
             current_quantity=current_quantity,
             minimum_quantity=minimum_quantity,
+            target_quantity=target_quantity,
             location=request.form.get("location", "").strip(),
             notes=request.form.get("notes", "").strip(),
         )
@@ -115,12 +176,13 @@ def new_item():
         db.session.commit()
 
         if item.current_quantity:
-            create_transaction(
-                item,
-                item.current_quantity,
-                "initial_count",
-                "Initial quantity entered",
+            ic = InventoryCount(
+                item_id=item.id,
+                counted_quantity=item.current_quantity,
+                counted_at=datetime.utcnow(),
+                note="Initial count on item creation",
             )
+            db.session.add(ic)
             db.session.commit()
 
         flash("Item added.")
@@ -132,13 +194,27 @@ def new_item():
 @bp.route("/items/<int:item_id>")
 def item_detail(item_id):
     item = Item.query.get_or_404(item_id)
+    recent_counts = (
+        InventoryCount.query
+        .filter_by(item_id=item.id)
+        .order_by(InventoryCount.counted_at.desc())
+        .limit(10)
+        .all()
+    )
     transactions = (
         InventoryTransaction.query
         .filter_by(item_id=item.id)
         .order_by(InventoryTransaction.created_at.desc())
         .all()
     )
-    return render_template("item_detail.html", item=item, transactions=transactions)
+    stats = compute_usage_stats(item)
+    return render_template(
+        "item_detail.html",
+        item=item,
+        recent_counts=recent_counts,
+        transactions=transactions,
+        stats=stats,
+    )
 
 
 @bp.route("/items/<int:item_id>/edit", methods=["GET", "POST"])
@@ -151,10 +227,12 @@ def edit_item(item_id):
             flash("Item name is required.")
             return render_template("edit_item.html", item=item, categories=CATEGORIES)
 
+        target_raw = request.form.get("target_quantity", "").strip()
         item.name = name
         item.category = request.form.get("category", "Other")
         item.unit = request.form.get("unit", "each").strip() or "each"
         item.minimum_quantity = max(parse_int(request.form.get("minimum_quantity"), 0), 0)
+        item.target_quantity = max(parse_int(target_raw), 0) if target_raw else None
         item.location = request.form.get("location", "").strip()
         item.notes = request.form.get("notes", "").strip()
 
@@ -179,15 +257,14 @@ def adjust_item(item_id):
 
     new_quantity = item.current_quantity + change_amount
     if new_quantity < 0:
-        flash("That adjustment would make the quantity negative. Inventory goblin denied.")
+        flash("That adjustment would make the quantity negative.")
         return redirect(url_for("main.item_detail", item_id=item.id))
 
     item.current_quantity = new_quantity
     create_transaction(item, change_amount, "adjustment", note, created_by)
-
     db.session.commit()
 
-    flash("Inventory adjusted.")
+    flash("Adjustment saved.")
     return redirect(url_for("main.item_detail", item_id=item.id))
 
 
@@ -200,6 +277,70 @@ def archive_item(item_id):
     flash("Item archived.")
     return redirect(url_for("main.items"))
 
+
+# ── Weekly Count ─────────────────────────────────────────────────────────────
+
+@bp.route("/count", methods=["GET", "POST"])
+def count():
+    items = Item.query.filter_by(active=True).order_by(Item.category, Item.name).all()
+
+    if request.method == "POST":
+        counted_by = request.form.get("counted_by", "").strip()
+        note = request.form.get("note", "").strip()
+        now = datetime.utcnow()
+        saved = 0
+
+        for item in items:
+            raw = request.form.get(f"qty_{item.id}", "").strip()
+            if raw == "":
+                continue
+            qty = parse_int(raw, -1)
+            if qty < 0:
+                continue
+
+            ic = InventoryCount(
+                item_id=item.id,
+                counted_quantity=qty,
+                counted_at=now,
+                counted_by=counted_by or None,
+                note=note or None,
+            )
+            db.session.add(ic)
+            item.current_quantity = qty
+            saved += 1
+
+        db.session.commit()
+        flash(f"Count saved — {saved} item{'s' if saved != 1 else ''} updated.")
+        return redirect(url_for("main.index"))
+
+    return render_template("count.html", items=items, categories=CATEGORIES)
+
+
+@bp.route("/count/history")
+def count_history():
+    counts = (
+        InventoryCount.query
+        .join(Item)
+        .filter(Item.active == True)
+        .order_by(InventoryCount.counted_at.desc())
+        .limit(300)
+        .all()
+    )
+
+    sessions = defaultdict(list)
+    for c in counts:
+        key = (c.counted_at.date(), c.counted_by or "")
+        sessions[key].append(c)
+
+    session_list = [
+        {"date": k[0], "counted_by": k[1], "counts": v}
+        for k, v in sorted(sessions.items(), reverse=True)
+    ]
+
+    return render_template("count_history.html", sessions=session_list)
+
+
+# ── Low Stock ────────────────────────────────────────────────────────────────
 
 @bp.route("/low-stock")
 def low_stock():

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Count History — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Count History</h1>
+  <a href="{{ url_for('main.count') }}" class="btn btn-primary">New Count</a>
+</div>
+
+{% if sessions %}
+  {% for session in sessions %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.75rem;">
+      <h2 style="margin:0;">{{ session.date.strftime('%B %d, %Y') }}</h2>
+      <span class="meta">
+        {{ session.counts|length }} item{{ 's' if session.counts|length != 1 }}
+        {% if session.counted_by %} &middot; {{ session.counted_by }}{% endif %}
+        {% if session.counts[0].note %} &middot; <em>{{ session.counts[0].note }}</em>{% endif %}
+      </span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Category</th>
+          <th>Counted</th>
+          <th>Min</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in session.counts|sort(attribute='item.category') %}
+        <tr>
+          <td><a href="{{ url_for('main.item_detail', item_id=c.item.id) }}">{{ c.item.name }}</a></td>
+          <td class="meta">{{ c.item.category }}</td>
+          <td>{{ c.counted_quantity }} <span class="meta">{{ c.item.unit }}</span></td>
+          <td class="meta">{{ c.item.minimum_quantity }}</td>
+          <td>
+            {% if c.counted_quantity <= 0 %}
+              <span class="badge badge-out">Out</span>
+            {% elif c.counted_quantity <= c.item.minimum_quantity %}
+              <span class="badge badge-low">Low</span>
+            {% else %}
+              <span class="badge badge-ok">OK</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <p>No counts yet. Run your first weekly count to start tracking usage.</p>
+    <a href="{{ url_for('main.count') }}" class="btn btn-primary">Start Count</a>
+  </div>
+{% endif %}
+{% endblock %}
