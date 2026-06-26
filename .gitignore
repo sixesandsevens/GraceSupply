@@ -1,9 +1,15 @@
 .venv/
 __pycache__/
 *.py[cod]
-instance/*.db
-instance/*.sqlite
 .env
 .DS_Store
+
+# database — keep the folder, ignore the file
+instance/*.db
+instance/*.sqlite
+instance/*.sqlite3
+!instance/.gitkeep
+
+# uploaded product photos — keep the folder, ignore the files
 app/static/uploads/items/*
 !app/static/uploads/items/.gitkeep

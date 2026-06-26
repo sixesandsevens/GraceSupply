@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Count Summary — GraceSupply{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Count Saved</h1>
+  <div class="inline-actions">
+    <a href="{{ url_for('main.low_stock') }}" class="btn btn-primary">View Reorder List</a>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Dashboard</a>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card" style="cursor:default;">
+    <div class="stat-number">{{ summary.saved }}</div>
+    <div class="meta">items counted</div>
+  </div>
+  <div class="stat-card" style="cursor:default;">
+    <div class="stat-number" style="color:{% if summary.low %}#92400e{% else %}#16a34a{% endif %};">{{ summary.low|length }}</div>
+    <div class="meta">now low or out</div>
+  </div>
+  <div class="stat-card" style="cursor:default;">
+    <div class="stat-number" style="color:{% if summary.out %}#dc2626{% else %}#16a34a{% endif %};">{{ summary.out|length }}</div>
+    <div class="meta">out of stock</div>
+  </div>
+</div>
+
+{% if summary.low %}
+<h2>Needs Ordering</h2>
+<table style="margin-bottom:1.5rem;">
+  <thead>
+    <tr><th>Item</th><th>Counted</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for entry in summary.low %}
+    <tr>
+      <td>{{ entry.name }}</td>
+      <td>{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
+      <td>
+        {% if entry.out %}
+          <span class="badge badge-out">Out</span>
+        {% else %}
+          <span class="badge badge-low">Low</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if summary.drops %}
+<h2>Biggest Drops This Count</h2>
+<table>
+  <thead>
+    <tr><th>Item</th><th>Was</th><th>Now</th><th>Used</th></tr>
+  </thead>
+  <tbody>
+    {% for entry in summary.drops %}
+    <tr>
+      <td>{{ entry.name }}</td>
+      <td class="meta">{{ entry.prev }} {{ entry.unit }}</td>
+      <td>{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
+      <td><span class="negative">-{{ entry.drop }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if not summary.low and not summary.drops %}
+<div class="card" style="color:#16a34a;font-weight:500;">
+  Everything looks good. No items low, no big drops.
+</div>
+{% endif %}
+
+{% endblock %}

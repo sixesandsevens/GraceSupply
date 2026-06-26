@@ -3,45 +3,77 @@
 
 {% block content %}
 <div class="page-header">
-  <h1>Low Stock</h1>
+  <h1>Low Stock / Reorder</h1>
   <a href="{{ url_for('main.items') }}" class="btn btn-secondary">All Items</a>
 </div>
 
-{% if items %}
-  <p class="meta" style="margin-bottom:1rem;">{{ items|length }} item{{ 's' if items|length != 1 }} at or below minimum.</p>
+{% if reorder_rows %}
+  <p class="meta" style="margin-bottom:1rem;">
+    {{ reorder_rows|length }} item{{ 's' if reorder_rows|length != 1 }} at or below minimum.
+  </p>
   <table>
     <thead>
       <tr>
+        <th style="width:44px;"></th>
         <th>Item</th>
-        <th>Category</th>
-        <th>Location</th>
         <th>Have</th>
-        <th>Need</th>
+        <th>Min</th>
+        <th>Target</th>
+        <th>Order</th>
+        <th>Vendor</th>
+        <th>Est. cost</th>
         <th>Status</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in items %}
-        <tr>
-          <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}" style="text-decoration:none;color:inherit;font-weight:500;">{{ item.name }}</a></td>
-          <td class="meta">{{ item.category }}</td>
-          <td class="meta">{{ item.location or '—' }}</td>
-          <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
-          <td class="meta">{{ item.minimum_quantity }}</td>
-          <td>
-            {% if item.current_quantity <= 0 %}
-              <span class="badge badge-out">Out</span>
-            {% else %}
-              <span class="badge badge-low">Low</span>
-            {% endif %}
-          </td>
-        </tr>
+      {% for row in reorder_rows %}
+      {% set item = row.item %}
+      <tr>
+        <td style="padding:.4rem .5rem;">
+          {% if item.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
+                 alt="" style="width:36px;height:36px;object-fit:cover;border-radius:4px;display:block;">
+          {% endif %}
+        </td>
+        <td>
+          <a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a>
+          <div class="meta">{{ item.category }}</div>
+          {% if item.sku %}
+            <div class="meta">{{ item.sku }}</div>
+          {% endif %}
+          {% if item.vendor_url %}
+            <div><a href="{{ item.vendor_url }}" target="_blank" rel="noopener" style="font-size:.78rem;">order link ↗</a></div>
+          {% endif %}
+        </td>
+        <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
+        <td class="meta">{{ item.minimum_quantity }}</td>
+        <td class="meta">{{ item.target_quantity or '—' }}</td>
+        <td>
+          {% if row.suggest is not none %}
+            <strong style="color:#2563eb;">{{ row.suggest }}</strong>
+            <span class="meta">{{ item.unit }}</span>
+          {% else %}
+            <span class="meta">—</span>
+          {% endif %}
+        </td>
+        <td class="meta">{{ item.vendor or '—' }}</td>
+        <td class="meta">
+          {% if row.est_cost %}${{ "%.2f"|format(row.est_cost) }}{% else %}—{% endif %}
+        </td>
+        <td>
+          {% if item.current_quantity <= 0 %}
+            <span class="badge badge-out">Out</span>
+          {% else %}
+            <span class="badge badge-low">Low</span>
+          {% endif %}
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 {% else %}
   <div class="empty-state">
-    <p>All items are above minimum. You're good.</p>
+    <p>All items are above minimum. Nothing needs ordering right now.</p>
   </div>
 {% endif %}
 {% endblock %}

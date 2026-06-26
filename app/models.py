@@ -18,6 +18,12 @@ class Item(db.Model):
     image_filename = db.Column(db.String(255), nullable=True)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
+    # Vendor / ordering info
+    vendor = db.Column(db.String(120), nullable=True)
+    sku = db.Column(db.String(120), nullable=True)
+    vendor_url = db.Column(db.String(500), nullable=True)
+    estimated_unit_cost = db.Column(db.Float, nullable=True)
+
     transactions = db.relationship("InventoryTransaction", backref="item", lazy=True)
     counts = db.relationship("InventoryCount", backref="item", lazy=True,
                              order_by="InventoryCount.counted_at.desc()")

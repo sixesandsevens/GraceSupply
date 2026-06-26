@@ -21,7 +21,7 @@
 </div>
 {% endif %}
 
-<!-- Current status -->
+<!-- Status -->
 <div class="card" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
   <div style="text-align:center;">
     <div style="font-size:2.5rem;font-weight:700;line-height:1;">{{ item.current_quantity }}</div>
@@ -39,11 +39,11 @@
   {% endif %}
   <div>
     {% if item.current_quantity <= 0 %}
-      <span class="badge badge-out" style="font-size:0.9rem;padding:4px 12px;">Out of stock</span>
+      <span class="badge badge-out" style="font-size:.9rem;padding:4px 12px;">Out of stock</span>
     {% elif item.current_quantity <= item.minimum_quantity %}
-      <span class="badge badge-low" style="font-size:0.9rem;padding:4px 12px;">Low — needs reorder</span>
+      <span class="badge badge-low" style="font-size:.9rem;padding:4px 12px;">Low — needs reorder</span>
     {% else %}
-      <span class="badge badge-ok" style="font-size:0.9rem;padding:4px 12px;">OK</span>
+      <span class="badge badge-ok" style="font-size:.9rem;padding:4px 12px;">OK</span>
     {% endif %}
   </div>
   {% if item.location %}<div class="meta">📍 {{ item.location }}</div>{% endif %}
@@ -73,95 +73,127 @@
   {% endif %}
   {% if stats.spike %}
   <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:.5rem .75rem;">
-    <span style="color:#92400e;font-size:.85rem;font-weight:600;">Usage spike detected</span>
-    <div class="meta">Last week was over 2x the usual rate.</div>
+    <div style="color:#92400e;font-size:.85rem;font-weight:600;">Usage spike detected</div>
+    <div class="meta">Last period burned more than 2× the usual rate.</div>
   </div>
   {% endif %}
 </div>
 {% endif %}
 
-<!-- Archive -->
+<!-- Vendor info -->
+{% if item.vendor or item.sku or item.vendor_url or item.estimated_unit_cost %}
 <div class="card">
-  <form method="POST" action="{{ url_for('main.archive_item', item_id=item.id) }}" onsubmit="return confirm('Archive this item? It will disappear from active inventory.');">
-    <button type="submit" class="btn btn-danger">Archive Item</button>
-    <span class="meta" style="margin-left:.5rem;">Discontinued supplies or mistakes. History stays in the database.</span>
-  </form>
+  <h2 style="margin-top:0;">Ordering Info</h2>
+  <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+    {% if item.vendor %}
+    <div><div class="meta">Vendor</div><strong>{{ item.vendor }}</strong></div>
+    {% endif %}
+    {% if item.sku %}
+    <div><div class="meta">Product code / SKU</div><strong>{{ item.sku }}</strong></div>
+    {% endif %}
+    {% if item.estimated_unit_cost %}
+    <div><div class="meta">Unit cost</div><strong>${{ "%.2f"|format(item.estimated_unit_cost) }}</strong></div>
+    {% endif %}
+    {% if item.vendor_url %}
+    <div><div class="meta">Link</div><a href="{{ item.vendor_url }}" target="_blank" rel="noopener" style="font-size:.9rem;">Open product page ↗</a></div>
+    {% endif %}
+  </div>
 </div>
+{% endif %}
 
-<!-- Manual adjustment -->
+<!-- Receive stock -->
 <div class="card">
-  <h2>Manual Adjustment</h2>
-  <p class="meta" style="margin-bottom:.75rem;">For corrections and one-off changes — not weekly counts. Use the <a href="{{ url_for('main.count') }}">Weekly Count</a> page for regular counts.</p>
-  <form method="POST" action="{{ url_for('main.adjust_item', item_id=item.id) }}" style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+  <h2 style="margin-top:0;">Receive Stock</h2>
+  <form method="POST" action="{{ url_for('main.receive_item', item_id=item.id) }}" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
     <div class="form-group" style="margin:0;min-width:120px;">
-      <label for="change_amount">Change (+/-)</label>
-      <input type="number" id="change_amount" name="change_amount" placeholder="+4 or -2" required>
+      <label for="received_quantity">Quantity received</label>
+      <input type="number" id="received_quantity" name="received_quantity" min="1" placeholder="e.g. 24" required>
     </div>
     <div class="form-group" style="margin:0;flex:1;min-width:180px;">
-      <label for="note">Reason</label>
-      <input type="text" id="note" name="note" placeholder="Correction, received order…">
+      <label for="receive_note">Source / note</label>
+      <input type="text" id="receive_note" name="note" placeholder="Sam's Club order, Amazon, donation…">
     </div>
-    <div class="form-group" style="margin:0;min-width:140px;">
-      <label for="created_by">Your name</label>
-      <input type="text" id="created_by" name="created_by" placeholder="Optional">
+    <div class="form-group" style="margin:0;min-width:130px;">
+      <label for="received_by">Received by</label>
+      <input type="text" id="received_by" name="received_by" placeholder="Optional">
     </div>
     <button type="submit" class="btn btn-primary" style="align-self:flex-end;">Save</button>
   </form>
 </div>
 
-<!-- Count history -->
-<h2>Count History</h2>
-{% if recent_counts %}
-  <table style="margin-bottom:1rem;">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Counted</th>
-        <th>By</th>
-        <th>Note</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for c in recent_counts %}
-      <tr>
-        <td class="meta">{{ c.counted_at.strftime('%b %d, %Y') }}</td>
-        <td>{{ c.counted_quantity }} <span class="meta">{{ item.unit }}</span></td>
-        <td class="meta">{{ c.counted_by or '—' }}</td>
-        <td class="meta">{{ c.note or '—' }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-{% else %}
-  <div class="empty-state" style="padding:1.5rem;">No count records yet. This item will appear on the weekly count page.</div>
-{% endif %}
+<!-- Manual adjustment -->
+<div class="card">
+  <h2 style="margin-top:0;">Manual Adjustment</h2>
+  <p class="meta" style="margin-bottom:.75rem;">For corrections only. Use <strong>Receive Stock</strong> above for actual deliveries.</p>
+  <form method="POST" action="{{ url_for('main.adjust_item', item_id=item.id) }}" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <div class="form-group" style="margin:0;min-width:120px;">
+      <label for="change_amount">Change (+/-)</label>
+      <input type="number" id="change_amount" name="change_amount" placeholder="+4 or -2" required>
+    </div>
+    <div class="form-group" style="margin:0;flex:1;min-width:180px;">
+      <label for="adjust_note">Reason</label>
+      <input type="text" id="adjust_note" name="note" placeholder="Correction, damaged, etc.">
+    </div>
+    <div class="form-group" style="margin:0;min-width:130px;">
+      <label for="created_by">Your name</label>
+      <input type="text" id="created_by" name="created_by" placeholder="Optional">
+    </div>
+    <button type="submit" class="btn btn-secondary" style="align-self:flex-end;">Save</button>
+  </form>
+</div>
 
-<!-- Manual adjustment log -->
-{% if transactions %}
-<h2>Manual Adjustments</h2>
+<!-- Archive -->
+<div class="card">
+  <form method="POST" action="{{ url_for('main.archive_item', item_id=item.id) }}" onsubmit="return confirm('Archive this item? It will disappear from active inventory.');">
+    <button type="submit" class="btn btn-danger">Archive Item</button>
+    <span class="meta" style="margin-left:.5rem;">Discontinued or entered by mistake. History stays in the database.</span>
+  </form>
+</div>
+
+<!-- Unified timeline -->
+<h2>History</h2>
+{% if timeline %}
 <table>
   <thead>
     <tr>
       <th>Date</th>
-      <th>Change</th>
-      <th>Reason</th>
+      <th>Event</th>
+      <th>Quantity</th>
+      <th>Note</th>
       <th>By</th>
     </tr>
   </thead>
   <tbody>
-    {% for txn in transactions %}
+    {% for entry in timeline %}
     <tr>
-      <td class="meta">{{ txn.created_at.strftime('%b %d, %Y') }}</td>
+      <td class="meta">{{ entry.date.strftime('%b %d, %Y') }}</td>
       <td>
-        {% if txn.change_amount > 0 %}<span class="positive">+{{ txn.change_amount }}</span>
-        {% elif txn.change_amount < 0 %}<span class="negative">{{ txn.change_amount }}</span>
-        {% else %}<span class="meta">—</span>{% endif %}
+        {% if entry.type == 'count' %}
+          <span class="badge" style="background:#e0e7ff;color:#3730a3;">count</span>
+        {% elif entry.type == 'received' %}
+          <span class="badge" style="background:#d1fae5;color:#065f46;">received</span>
+        {% elif entry.type == 'adjustment' %}
+          <span class="badge" style="background:#fef3c7;color:#92400e;">adjustment</span>
+        {% else %}
+          <span class="badge" style="background:#f5f5f4;color:#78716c;">{{ entry.type }}</span>
+        {% endif %}
       </td>
-      <td>{{ txn.note or '—' }} <span class="meta">({{ txn.transaction_type }})</span></td>
-      <td class="meta">{{ txn.created_by or '—' }}</td>
+      <td>
+        {% if entry.type == 'count' %}
+          {{ entry.qty }} <span class="meta">{{ item.unit }}</span>
+        {% elif entry.change is not none %}
+          {% if entry.change > 0 %}<span class="positive">+{{ entry.change }}</span>
+          {% elif entry.change < 0 %}<span class="negative">{{ entry.change }}</span>
+          {% else %}<span class="meta">—</span>{% endif %}
+        {% endif %}
+      </td>
+      <td class="meta">{{ entry.note or '—' }}</td>
+      <td class="meta">{{ entry.by or '—' }}</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% else %}
+<div class="empty-state" style="padding:1.5rem;">No history yet.</div>
 {% endif %}
 {% endblock %}
