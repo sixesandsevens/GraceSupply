@@ -48,7 +48,7 @@
               <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
                    alt="" style="width:44px;height:44px;object-fit:cover;border-radius:4px;display:block;">
             {% else %}
-              <div style="width:44px;height:44px;border-radius:4px;background:#f5f5f4;"></div>
+              <div style="width:44px;height:44px;border-radius:4px;background:var(--border-subtle);"></div>
             {% endif %}
           </td>
           <td data-label="Item"><a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a></td>

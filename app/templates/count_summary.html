@@ -16,11 +16,11 @@
     <div class="meta">items counted</div>
   </div>
   <div class="stat-card" style="cursor:default;">
-    <div class="stat-number" style="color:{% if summary.low %}#92400e{% else %}#16a34a{% endif %};">{{ summary.low|length }}</div>
+    <div class="stat-number" style="color:{% if summary.low %}var(--badge-low-text){% else %}var(--positive){% endif %};">{{ summary.low|length }}</div>
     <div class="meta">now low or out</div>
   </div>
   <div class="stat-card" style="cursor:default;">
-    <div class="stat-number" style="color:{% if summary.out %}#dc2626{% else %}#16a34a{% endif %};">{{ summary.out|length }}</div>
+    <div class="stat-number" style="color:{% if summary.out %}var(--negative){% else %}var(--positive){% endif %};">{{ summary.out|length }}</div>
     <div class="meta">out of stock</div>
   </div>
 </div>
@@ -34,9 +34,9 @@
   <tbody>
     {% for entry in summary.low %}
     <tr>
-      <td>{{ entry.name }}</td>
-      <td>{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
-      <td>
+      <td data-label="Item">{{ entry.name }}</td>
+      <td data-label="Counted">{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
+      <td data-label="Status">
         {% if entry.out %}
           <span class="badge badge-out">Out</span>
         {% else %}
@@ -58,10 +58,10 @@
   <tbody>
     {% for entry in summary.drops %}
     <tr>
-      <td>{{ entry.name }}</td>
-      <td class="meta">{{ entry.prev }} {{ entry.unit }}</td>
-      <td>{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
-      <td><span class="negative">-{{ entry.drop }}</span></td>
+      <td data-label="Item">{{ entry.name }}</td>
+      <td data-label="Was" class="meta">{{ entry.prev }} {{ entry.unit }}</td>
+      <td data-label="Now">{{ entry.qty }} <span class="meta">{{ entry.unit }}</span></td>
+      <td data-label="Used"><span class="negative">-{{ entry.drop }}</span></td>
     </tr>
     {% endfor %}
   </tbody>
@@ -69,7 +69,7 @@
 {% endif %}
 
 {% if not summary.low and not summary.drops %}
-<div class="card" style="color:#16a34a;font-weight:500;">
+<div class="card" style="color:var(--positive);font-weight:500;">
   Everything looks good. No items low, no big drops.
 </div>
 {% endif %}

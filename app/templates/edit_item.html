@@ -83,9 +83,9 @@
         <div style="margin-bottom:.75rem;">
           <img src="{{ url_for('static', filename='uploads/items/' + item.image_filename) }}"
                alt="{{ item.name }}"
-               style="max-height:160px;border-radius:6px;border:1px solid #e7e5e4;">
+               style="max-height:160px;border-radius:6px;border:1px solid var(--border);">
         </div>
-        <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#44403c;cursor:pointer;margin-bottom:.5rem;">
+        <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:var(--text-label);cursor:pointer;margin-bottom:.5rem;">
           <input type="checkbox" name="remove_photo" value="1"> Remove current photo
         </label>
         <div class="meta" style="margin-bottom:.4rem;">Or upload a replacement:</div>

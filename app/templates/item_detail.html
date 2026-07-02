@@ -28,12 +28,12 @@
     <div class="meta">in stock</div>
   </div>
   <div style="text-align:center;">
-    <div style="font-size:1.5rem;font-weight:600;color:#78716c;line-height:1;">{{ item.minimum_quantity }}</div>
+    <div style="font-size:1.5rem;font-weight:600;color:var(--text-muted);line-height:1;">{{ item.minimum_quantity }}</div>
     <div class="meta">minimum</div>
   </div>
   {% if item.target_quantity %}
   <div style="text-align:center;">
-    <div style="font-size:1.5rem;font-weight:600;color:#78716c;line-height:1;">{{ item.target_quantity }}</div>
+    <div style="font-size:1.5rem;font-weight:600;color:var(--text-muted);line-height:1;">{{ item.target_quantity }}</div>
     <div class="meta">target</div>
   </div>
   {% endif %}
@@ -59,7 +59,7 @@
   </div>
   {% if stats.weeks_remaining is not none %}
   <div>
-    <div style="font-size:1.4rem;font-weight:700;color:{% if stats.weeks_remaining < 1 %}#dc2626{% elif stats.weeks_remaining < 2 %}#92400e{% else %}#1c1917{% endif %};">
+    <div style="font-size:1.4rem;font-weight:700;color:{% if stats.weeks_remaining < 1 %}var(--negative){% elif stats.weeks_remaining < 2 %}var(--badge-low-text){% else %}var(--text){% endif %};">
       {{ stats.weeks_remaining }}w
     </div>
     <div class="meta">estimated remaining</div>
@@ -67,13 +67,13 @@
   {% endif %}
   {% if stats.suggest_order %}
   <div>
-    <div style="font-size:1.4rem;font-weight:700;color:#2563eb;">{{ stats.suggest_order }}</div>
+    <div style="font-size:1.4rem;font-weight:700;color:var(--accent-blue);">{{ stats.suggest_order }}</div>
     <div class="meta">{{ item.unit }} to restock to target</div>
   </div>
   {% endif %}
   {% if stats.spike %}
-  <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:.5rem .75rem;">
-    <div style="color:#92400e;font-size:.85rem;font-weight:600;">Usage spike detected</div>
+  <div style="background:var(--spike-bg);border:1px solid var(--spike-border);border-radius:6px;padding:.5rem .75rem;">
+    <div style="color:var(--spike-text);font-size:.85rem;font-weight:600;">Usage spike detected</div>
     <div class="meta">Last period burned more than 2× the usual rate.</div>
   </div>
   {% endif %}
@@ -172,13 +172,13 @@
       <td data-label="Date" class="meta">{{ entry.date.strftime('%b %d, %Y') }}</td>
       <td data-label="Event">
         {% if entry.type == 'count' %}
-          <span class="badge" style="background:#e0e7ff;color:#3730a3;">count</span>
+          <span class="badge" style="background:var(--event-count-bg);color:var(--event-count-text);">count</span>
         {% elif entry.type == 'received' %}
-          <span class="badge" style="background:#d1fae5;color:#065f46;">received</span>
+          <span class="badge" style="background:var(--event-received-bg);color:var(--event-received-text);">received</span>
         {% elif entry.type == 'adjustment' %}
-          <span class="badge" style="background:#fef3c7;color:#92400e;">adjustment</span>
+          <span class="badge" style="background:var(--event-adjustment-bg);color:var(--event-adjustment-text);">adjustment</span>
         {% else %}
-          <span class="badge" style="background:#f5f5f4;color:#78716c;">{{ entry.type }}</span>
+          <span class="badge" style="background:var(--event-other-bg);color:var(--event-other-text);">{{ entry.type }}</span>
         {% endif %}
       </td>
       <td data-label="Quantity">

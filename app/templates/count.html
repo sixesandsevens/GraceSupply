@@ -55,7 +55,7 @@
         <td data-label="Last count" class="meta">
           {% if item.counts %}
             {{ item.counts[0].counted_quantity }}
-            <span style="color:#a8a29e;">{{ item.counts[0].counted_at.strftime('%b %d') }}</span>
+            <span style="color:var(--meta-secondary);">{{ item.counts[0].counted_at.strftime('%b %d') }}</span>
           {% else %}
             —
           {% endif %}

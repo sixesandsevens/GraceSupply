@@ -13,7 +13,7 @@
     <div class="meta">active items</div>
   </a>
   <a class="stat-card" href="{{ url_for('main.low_stock') }}">
-    <div class="stat-number" style="color:{% if low_count > 0 %}#92400e{% else %}#16a34a{% endif %};">{{ low_count }}</div>
+    <div class="stat-number" style="color:{% if low_count > 0 %}var(--badge-low-text){% else %}var(--positive){% endif %};">{{ low_count }}</div>
     <div class="meta">low or out of stock</div>
   </a>
   <a class="stat-card" href="{{ url_for('main.count_history') }}">
@@ -57,7 +57,7 @@
   </tbody>
 </table>
 {% else %}
-<div class="card" style="color:#16a34a;font-weight:500;">
+<div class="card" style="color:var(--positive);font-weight:500;">
   All items are above minimum. Nothing needs ordering right now.
 </div>
 {% endif %}
