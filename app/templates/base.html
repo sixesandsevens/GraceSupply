@@ -23,6 +23,7 @@
       gap: 1.25rem;
       min-height: 52px;
       flex-wrap: wrap;
+      position: relative;
     }
 
     nav a.brand {
@@ -41,6 +42,42 @@
     }
 
     nav a:hover { color: #fafaf9; }
+
+    .nav-toggle { display: none; }
+    .nav-toggle-label {
+      display: none;
+      margin-left: auto;
+      cursor: pointer;
+      padding: 0.4rem;
+    }
+
+    .nav-toggle-label span,
+    .nav-toggle-label span::before,
+    .nav-toggle-label span::after {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #fafaf9;
+      position: relative;
+      transition: background 0.15s;
+    }
+
+    .nav-toggle-label span::before,
+    .nav-toggle-label span::after {
+      content: "";
+      position: absolute;
+      left: 0;
+    }
+
+    .nav-toggle-label span::before { top: -6px; }
+    .nav-toggle-label span::after { top: 6px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
 
     main {
       max-width: 1000px;
@@ -159,6 +196,8 @@
 
     textarea { resize: vertical; min-height: 80px; }
 
+    .count-input { width: 90px; text-align: center; }
+
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .meta { font-size: 0.8rem; color: #78716c; }
     .positive { color: #16a34a; font-weight: 600; }
@@ -206,11 +245,96 @@
       font-size: .8rem;
     }
 
+    .flex-stats { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; }
+
     @media (max-width: 700px) {
       .grid-2, .stats-grid, .filters { grid-template-columns: 1fr; }
-      table { font-size: 0.82rem; }
-      td, th { padding: 0.5rem 0.6rem; }
       nav { padding: .75rem 1rem; }
+      .flex-stats { gap: 1rem; }
+
+      .nav-toggle-label { display: block; }
+
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0;
+        margin-top: .75rem;
+        padding-top: .75rem;
+        border-top: 1px solid #44403c;
+      }
+
+      .nav-toggle:checked ~ .nav-links { display: flex; }
+
+      .nav-links a {
+        padding: .6rem 0;
+        border-bottom: 1px solid #292524;
+      }
+
+      .nav-user {
+        margin-left: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: .5rem;
+        padding-top: .75rem;
+      }
+
+      .nav-user form { width: 100%; }
+      .nav-user .btn { width: 100%; text-align: center; padding: .5rem; }
+
+      /* Tables reflow into stacked cards instead of squeezed columns */
+      table, thead, tbody, th, tr, td { display: block; }
+      table { background: none; box-shadow: none; border-radius: 0; }
+      thead { position: absolute; top: -9999px; left: -9999px; }
+
+      tr {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+        padding: .5rem .75rem;
+        margin-bottom: .75rem;
+      }
+
+      tr:hover td { background: transparent; }
+
+      td {
+        border-bottom: none;
+        padding: .35rem 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: .75rem;
+        text-align: right;
+      }
+
+      td[data-label]::before {
+        content: attr(data-label);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #78716c;
+        font-weight: 600;
+        text-align: left;
+        flex-shrink: 0;
+      }
+
+      td:not([data-label]) {
+        justify-content: center;
+      }
+
+      /* Cells with multi-line content (name + secondary details) read better
+         stacked top-to-bottom than squeezed into a label/value row */
+      td.stack {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      td.stack::before { margin-bottom: .2rem; }
+
+      td input[type=number], td input[type=text] { width: auto; flex: 1; text-align: right; }
+      .count-input { width: auto; flex: 1; text-align: right; font-size: 1.1rem; padding: .6rem .75rem; }
     }
   </style>
 </head>
@@ -219,17 +343,21 @@
 <nav>
   <a href="{{ url_for('main.index') }}" class="brand">GraceSupply</a>
   {% if current_user.is_authenticated %}
-    <a href="{{ url_for('main.index') }}">Dashboard</a>
-    <a href="{{ url_for('main.items') }}">All Items</a>
-    <a href="{{ url_for('main.new_item') }}">+ Add Item</a>
-    <a href="{{ url_for('main.low_stock') }}">Low Stock</a>
-    <a href="{{ url_for('main.count') }}">Weekly Count</a>
-    <div class="nav-user">
-      <span>{{ current_user.username }}</span>
-      <form method="POST" action="{{ url_for('auth.logout') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-secondary">Logout</button>
-      </form>
+    <input type="checkbox" id="nav-toggle" class="nav-toggle">
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle menu"><span></span></label>
+    <div class="nav-links">
+      <a href="{{ url_for('main.index') }}">Dashboard</a>
+      <a href="{{ url_for('main.items') }}">All Items</a>
+      <a href="{{ url_for('main.new_item') }}">+ Add Item</a>
+      <a href="{{ url_for('main.low_stock') }}">Low Stock</a>
+      <a href="{{ url_for('main.count') }}">Weekly Count</a>
+      <div class="nav-user">
+        <span>{{ current_user.username }}</span>
+        <form method="POST" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-secondary">Logout</button>
+        </form>
+      </div>
     </div>
   {% endif %}
 </nav>

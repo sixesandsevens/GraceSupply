@@ -35,7 +35,7 @@
                  alt="" style="width:36px;height:36px;object-fit:cover;border-radius:4px;display:block;">
           {% endif %}
         </td>
-        <td>
+        <td data-label="Item" class="stack">
           <a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a>
           <div class="meta">{{ item.category }}</div>
           {% if item.sku %}
@@ -45,10 +45,10 @@
             <div><a href="{{ item.vendor_url }}" target="_blank" rel="noopener" style="font-size:.78rem;">order link ↗</a></div>
           {% endif %}
         </td>
-        <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
-        <td class="meta">{{ item.minimum_quantity }}</td>
-        <td class="meta">{{ item.target_quantity or '—' }}</td>
-        <td>
+        <td data-label="Have">{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
+        <td data-label="Min" class="meta">{{ item.minimum_quantity }}</td>
+        <td data-label="Target" class="meta">{{ item.target_quantity or '—' }}</td>
+        <td data-label="Order">
           {% if row.suggest is not none %}
             <strong style="color:#2563eb;">{{ row.suggest }}</strong>
             <span class="meta">{{ item.unit }}</span>
@@ -56,11 +56,11 @@
             <span class="meta">—</span>
           {% endif %}
         </td>
-        <td class="meta">{{ item.vendor or '—' }}</td>
-        <td class="meta">
+        <td data-label="Vendor" class="meta">{{ item.vendor or '—' }}</td>
+        <td data-label="Est. cost" class="meta">
           {% if row.est_cost %}${{ "%.2f"|format(row.est_cost) }}{% else %}—{% endif %}
         </td>
-        <td>
+        <td data-label="Status">
           {% if item.current_quantity <= 0 %}
             <span class="badge badge-out">Out</span>
           {% else %}

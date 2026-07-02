@@ -40,12 +40,12 @@
   <tbody>
     {% for item in low_items %}
     <tr>
-      <td><a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a></td>
-      <td class="meta">{{ item.category }}</td>
-      <td>{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
-      <td class="meta">{{ item.minimum_quantity }}</td>
-      <td class="meta">{{ item.target_quantity or '—' }}</td>
-      <td>
+      <td data-label="Item"><a href="{{ url_for('main.item_detail', item_id=item.id) }}">{{ item.name }}</a></td>
+      <td data-label="Category" class="meta">{{ item.category }}</td>
+      <td data-label="Have">{{ item.current_quantity }} <span class="meta">{{ item.unit }}</span></td>
+      <td data-label="Min" class="meta">{{ item.minimum_quantity }}</td>
+      <td data-label="Target" class="meta">{{ item.target_quantity or '—' }}</td>
+      <td data-label="Status">
         {% if item.current_quantity <= 0 %}
           <span class="badge badge-out">Out</span>
         {% else %}

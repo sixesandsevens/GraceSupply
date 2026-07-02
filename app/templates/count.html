@@ -50,9 +50,9 @@
                  alt="" style="width:30px;height:30px;object-fit:cover;border-radius:3px;display:block;">
           {% endif %}
         </td>
-        <td style="font-weight:500;">{{ item.name }} <span class="meta">/ {{ item.unit }}</span></td>
-        <td class="meta">{{ item.location or '—' }}</td>
-        <td class="meta">
+        <td data-label="Item" style="font-weight:500;">{{ item.name }} <span class="meta">/ {{ item.unit }}</span></td>
+        <td data-label="Location" class="meta">{{ item.location or '—' }}</td>
+        <td data-label="Last count" class="meta">
           {% if item.counts %}
             {{ item.counts[0].counted_quantity }}
             <span style="color:#a8a29e;">{{ item.counts[0].counted_at.strftime('%b %d') }}</span>
@@ -60,13 +60,13 @@
             —
           {% endif %}
         </td>
-        <td>
+        <td data-label="Counted qty">
           <input
             type="number"
             name="qty_{{ item.id }}"
             min="0"
             placeholder="—"
-            style="width:90px;text-align:center;"
+            class="count-input"
           >
         </td>
       </tr>

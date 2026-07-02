@@ -31,11 +31,11 @@
       <tbody>
         {% for c in session.counts|sort(attribute='item.category') %}
         <tr>
-          <td><a href="{{ url_for('main.item_detail', item_id=c.item.id) }}">{{ c.item.name }}</a></td>
-          <td class="meta">{{ c.item.category }}</td>
-          <td>{{ c.counted_quantity }} <span class="meta">{{ c.item.unit }}</span></td>
-          <td class="meta">{{ c.item.minimum_quantity }}</td>
-          <td>
+          <td data-label="Item"><a href="{{ url_for('main.item_detail', item_id=c.item.id) }}">{{ c.item.name }}</a></td>
+          <td data-label="Category" class="meta">{{ c.item.category }}</td>
+          <td data-label="Counted">{{ c.counted_quantity }} <span class="meta">{{ c.item.unit }}</span></td>
+          <td data-label="Min" class="meta">{{ c.item.minimum_quantity }}</td>
+          <td data-label="Status">
             {% if c.counted_quantity <= 0 %}
               <span class="badge badge-out">Out</span>
             {% elif c.counted_quantity <= c.item.minimum_quantity %}

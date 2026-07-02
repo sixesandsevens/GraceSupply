@@ -22,7 +22,7 @@
 {% endif %}
 
 <!-- Status -->
-<div class="card" style="display:flex;gap:2rem;align-items:center;flex-wrap:wrap;">
+<div class="card flex-stats">
   <div style="text-align:center;">
     <div style="font-size:2.5rem;font-weight:700;line-height:1;">{{ item.current_quantity }}</div>
     <div class="meta">in stock</div>
@@ -52,7 +52,7 @@
 
 <!-- Usage stats -->
 {% if stats %}
-<div class="card" style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
+<div class="card flex-stats" style="align-items:flex-start;">
   <div>
     <div style="font-size:1.4rem;font-weight:700;">{{ stats.avg_weekly_usage }}</div>
     <div class="meta">avg used / week</div>
@@ -84,7 +84,7 @@
 {% if item.vendor or item.sku or item.vendor_url or item.estimated_unit_cost %}
 <div class="card">
   <h2 style="margin-top:0;">Ordering Info</h2>
-  <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+  <div class="flex-stats">
     {% if item.vendor %}
     <div><div class="meta">Vendor</div><strong>{{ item.vendor }}</strong></div>
     {% endif %}
@@ -169,8 +169,8 @@
   <tbody>
     {% for entry in timeline %}
     <tr>
-      <td class="meta">{{ entry.date.strftime('%b %d, %Y') }}</td>
-      <td>
+      <td data-label="Date" class="meta">{{ entry.date.strftime('%b %d, %Y') }}</td>
+      <td data-label="Event">
         {% if entry.type == 'count' %}
           <span class="badge" style="background:#e0e7ff;color:#3730a3;">count</span>
         {% elif entry.type == 'received' %}
@@ -181,7 +181,7 @@
           <span class="badge" style="background:#f5f5f4;color:#78716c;">{{ entry.type }}</span>
         {% endif %}
       </td>
-      <td>
+      <td data-label="Quantity">
         {% if entry.type == 'count' %}
           {{ entry.qty }} <span class="meta">{{ item.unit }}</span>
         {% elif entry.change is not none %}
@@ -190,8 +190,8 @@
           {% else %}<span class="meta">—</span>{% endif %}
         {% endif %}
       </td>
-      <td class="meta">{{ entry.note or '—' }}</td>
-      <td class="meta">{{ entry.by or '—' }}</td>
+      <td data-label="Note" class="meta">{{ entry.note or '—' }}</td>
+      <td data-label="By" class="meta">{{ entry.by or '—' }}</td>
     </tr>
     {% endfor %}
   </tbody>
