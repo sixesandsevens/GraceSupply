@@ -105,6 +105,7 @@
 <div class="card">
   <h2 style="margin-top:0;">Receive Stock</h2>
   <form method="POST" action="{{ url_for('main.receive_item', item_id=item.id) }}" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group" style="margin:0;min-width:120px;">
       <label for="received_quantity">Quantity received</label>
       <input type="number" id="received_quantity" name="received_quantity" min="1" placeholder="e.g. 24" required>
@@ -126,6 +127,7 @@
   <h2 style="margin-top:0;">Manual Adjustment</h2>
   <p class="meta" style="margin-bottom:.75rem;">For corrections only. Use <strong>Receive Stock</strong> above for actual deliveries.</p>
   <form method="POST" action="{{ url_for('main.adjust_item', item_id=item.id) }}" style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group" style="margin:0;min-width:120px;">
       <label for="change_amount">Change (+/-)</label>
       <input type="number" id="change_amount" name="change_amount" placeholder="+4 or -2" required>
@@ -145,6 +147,7 @@
 <!-- Archive -->
 <div class="card">
   <form method="POST" action="{{ url_for('main.archive_item', item_id=item.id) }}" onsubmit="return confirm('Archive this item? It will disappear from active inventory.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-danger">Archive Item</button>
     <span class="meta" style="margin-left:.5rem;">Discontinued or entered by mistake. History stays in the database.</span>
   </form>

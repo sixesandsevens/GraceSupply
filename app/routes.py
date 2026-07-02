@@ -4,11 +4,18 @@ from datetime import datetime
 
 from flask import (Blueprint, render_template, request, redirect,
                    url_for, flash, current_app, session)
+from flask_login import login_required
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Item, InventoryTransaction, InventoryCount
 
 bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+@login_required
+def require_login():
+    pass
 
 CATEGORIES = [
     "Cleaning",

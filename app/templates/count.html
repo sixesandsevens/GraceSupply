@@ -10,6 +10,7 @@
 <div class="card" style="margin-bottom:1.5rem;">
   <p class="meta" style="margin-bottom:.75rem;">Walk the supply room and enter what you actually see. Leave a box blank to skip that item — it won't update.</p>
   <form method="POST" id="count-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="grid-2" style="margin-bottom:1rem;">
       <div class="form-group" style="margin:0;">
         <label for="counted_by">Your name</label>
